@@ -111,7 +111,7 @@
   .scenario-card .metric .v { font-weight: 600; }
 
   /* Table */
-  .schedule-wrap { max-height: 460px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .schedule-wrap { max-height: 460px; overflow-y: auto; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: 8px; }
   table.schedule { width: 100%; border-collapse: collapse; font-size: 13px; }
   table.schedule th {
     position: sticky; top: 0; background: #f9fafb; border-bottom: 1px solid var(--border);
@@ -175,7 +175,8 @@
   .plan-section-title span { color: var(--accent); font-weight: 400; margin-right: 8px; }
   .plan-sub { font-size: 15px; font-weight: 600; color: var(--text); margin: 20px 0 8px; }
   .plan-p { font-size: 14px; line-height: 1.7; color: #374151; margin-bottom: 12px; }
-  .plan-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0 16px; }
+  .plan-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 12px 0 16px; }
+  .plan-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 400px; }
   .plan-table th {
     background: #f9fafb; border: 1px solid var(--border); padding: 10px 12px;
     text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase;
@@ -221,6 +222,10 @@
   [dir="rtl"] { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
   [dir="rtl"] .header { flex-direction: row-reverse; }
   [dir="rtl"] .header-right { flex-direction: row-reverse; }
+  @media (max-width: 600px) {
+    [dir="rtl"] .header { flex-direction: column; }
+    [dir="rtl"] .header-right { flex-direction: column !important; }
+  }
   [dir="rtl"] .stat-row { flex-direction: row-reverse; }
   [dir="rtl"] .metric { flex-direction: row-reverse; }
   [dir="rtl"] .checklist-item { flex-direction: row-reverse; text-align: right; }
@@ -242,12 +247,97 @@
   [dir="rtl"] .bar-row { flex-direction: row-reverse; }
 
   /* Responsive */
+  /* Tablet */
+  @media (max-width: 900px) {
+    .container { padding: 16px; }
+    .card { padding: 18px; }
+    .plan-nav-inner { gap: 4px; }
+    .plan-nav a { padding: 5px 10px; font-size: 11px; }
+  }
+
+  /* Mobile */
   @media (max-width: 600px) {
-    .header { flex-direction: column; gap: 12px; text-align: center; padding: 20px; }
+    .header { flex-direction: column; gap: 10px; text-align: center; padding: 16px; }
+    .header-left h1 { font-size: 18px; }
+    .header-left p { font-size: 12px; }
+    .header-right { flex-direction: column !important; gap: 8px !important; width: 100%; }
+    .header-right a, #langToggle { width: 100%; justify-content: center; box-sizing: border-box; }
+
+    .main-tabs { padding: 0 8px; gap: 0; }
+    .main-tab { padding: 10px 12px; font-size: 13px; flex: 1; text-align: center; }
+
+    .container { padding: 12px; }
+    .grid-2, .grid-3 { gap: 12px; }
+    .card { padding: 16px; border-radius: 8px; }
+    .card h2 { font-size: 12px; margin-bottom: 12px; }
+
+    /* Stats */
     .stat-grid { grid-template-columns: 1fr; }
-    .donut-wrap { flex-direction: column; }
-    .main-tabs { padding: 0 16px; }
-    .main-tab { padding: 10px 14px; font-size: 13px; }
+    .stat-item .value { font-size: 18px; }
+    .stat-row { padding: 8px 0; }
+    .stat-row .label, .stat-row .val { font-size: 12px; }
+
+    /* Donut */
+    .donut-wrap { flex-direction: column; align-items: center; gap: 16px; }
+    .donut-container { width: 140px; height: 140px; }
+    .donut-container canvas { width: 140px; height: 140px; }
+    .donut-center .big { font-size: 15px; }
+    .donut-legend { font-size: 12px; }
+
+    /* Calculator inputs */
+    .input-group { margin-bottom: 12px; }
+    .input-group label { font-size: 11px; }
+    .input-group input[type="number"] { padding: 8px 10px; font-size: 13px; }
+    .slider-val { font-size: 13px; min-width: 65px; }
+
+    /* Scenarios */
+    .scenario-card { padding: 12px; }
+    .scenario-card h3 { font-size: 13px; }
+    .scenario-card .metric { font-size: 12px; padding: 3px 0; }
+
+    /* Amortization */
+    .schedule-wrap { max-height: 350px; }
+    table.schedule { font-size: 11px; }
+    table.schedule th { padding: 8px 6px; font-size: 10px; }
+    table.schedule td { padding: 6px; }
+    .toggle-row { margin-bottom: 12px; }
+    .toggle-btn { padding: 5px 12px; font-size: 12px; }
+
+    /* Checklist */
+    .checklist-item { gap: 8px; font-size: 12px; padding: 8px 0; }
+    .badge { font-size: 9px; padding: 2px 6px; }
+
+    /* Action Plan tab */
+    .plan-section-title { font-size: 16px; }
+    .plan-sub { font-size: 14px; margin: 16px 0 6px; }
+    .plan-p { font-size: 13px; line-height: 1.6; }
+    .plan-list { font-size: 13px; padding-left: 16px; }
+    .plan-table { font-size: 11px; }
+    .plan-table th { padding: 8px 6px; font-size: 10px; }
+    .plan-table td { padding: 8px 6px; }
+    .plan-disclaimer { font-size: 12px; padding: 12px; }
+    .plan-nav { padding: 8px 0; }
+    .plan-nav-inner { gap: 4px; }
+    .plan-nav a { padding: 4px 8px; font-size: 10px; }
+    .callout { padding: 12px 14px; font-size: 13px; }
+    .callout-title { font-size: 12px; }
+
+    /* Summary boxes */
+    .grid-2 > .card > div[style*="grid-template-columns: 1fr 1fr"] {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* Very small screens */
+  @media (max-width: 380px) {
+    .header-left h1 { font-size: 16px; }
+    .stat-item .value { font-size: 16px; }
+    .card { padding: 12px; }
+    .slider-val { min-width: 55px; font-size: 12px; }
+    table.schedule { font-size: 10px; }
+    table.schedule th, table.schedule td { padding: 5px 4px; }
+    .plan-table { font-size: 10px; }
+    .plan-table th, .plan-table td { padding: 6px 4px; }
   }
 </style>
 </head>
