@@ -89,11 +89,13 @@
   /* Inputs */
   .input-group { margin-bottom: 16px; }
   .input-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
-  .input-group input[type="number"] {
+  .input-group input[type="number"],
+  .input-group input[type="text"] {
     width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
     font-size: 14px; font-family: inherit; transition: border-color 0.15s;
   }
-  .input-group input[type="number"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,0.12); }
+  .input-group input[type="number"]:focus,
+  .input-group input[type="text"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,0.12); }
   .slider-row { display: flex; align-items: center; gap: 12px; }
   .slider-row input[type="range"] {
     flex: 1; accent-color: var(--accent); height: 6px;
@@ -453,7 +455,7 @@
     <h2 data-i18n="loan_calc">Loan Repayment Calculator</h2>
     <div class="input-group">
       <label data-i18n="outstanding_balance">Outstanding Balance</label>
-      <input type="number" id="balance" value="429005" min="0" step="1000">
+      <input type="text" id="balance" value="$429,005" inputmode="numeric">
     </div>
     <div class="input-group">
       <label data-i18n="interest_rate">Interest Rate (%)</label>
@@ -464,7 +466,7 @@
     </div>
     <div class="input-group">
       <label data-i18n="monthly_payment">Monthly Payment</label>
-      <input type="number" id="payment" value="2733.45" min="100" step="50">
+      <input type="text" id="payment" value="$2,733.45" inputmode="decimal">
     </div>
     <div class="input-group">
       <label data-i18n="extra_monthly">Extra Monthly (Double-Up, max $2,733.45)</label>
@@ -997,6 +999,35 @@ function switchTab(tab, btn) {
 function fmt(n) { return '$' + Math.round(n).toLocaleString('en-CA'); }
 function fmt2(n) { return '$' + n.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
+/* Parse money string like "$429,005" or "2,733.45" to number */
+function parseMoney(str) {
+  return parseFloat(String(str).replace(/[^0-9.\-]/g, ''));
+}
+
+/* Format a money input field on blur */
+function formatMoneyInput(el) {
+  const val = parseMoney(el.value);
+  if (isNaN(val)) return;
+  if (el.value.includes('.') || el.id === 'payment') {
+    el.value = '$' + val.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  } else {
+    el.value = '$' + Math.round(val).toLocaleString('en-CA');
+  }
+}
+
+/* On focus, strip to raw number for easy editing */
+function stripMoneyInput(el) {
+  const val = parseMoney(el.value);
+  if (!isNaN(val)) el.value = val;
+}
+
+/* Attach formatting to money inputs */
+['balance', 'payment'].forEach(id => {
+  const el = $(id);
+  el.addEventListener('focus', () => stripMoneyInput(el));
+  el.addEventListener('blur', () => { formatMoneyInput(el); calculate(); });
+});
+
 /* Animated counters */
 function animateCounters() {
   document.querySelectorAll('.counter').forEach(el => {
@@ -1164,9 +1195,9 @@ function renderScenarios(balance, rate, payment, lumpYears) {
 
 /* Main calculation */
 function calculate() {
-  const balance = parseFloat($('balance').value) || 429005;
+  const balance = parseMoney($('balance').value) || 429005;
   const rate = parseFloat($('rate').value) || 5.59;
-  const payment = parseFloat($('payment').value) || 2733.45;
+  const payment = parseMoney($('payment').value) || 2733.45;
   const extraMonthly = parseFloat($('extraMonthly').value) || 0;
   const lumpSum = parseFloat($('lumpSum').value) || 0;
   const lumpYears = parseInt($('lumpYears').value) || 5;
@@ -1228,7 +1259,7 @@ function calculate() {
 }
 
 // Listeners
-['balance', 'payment'].forEach(id => $(id).addEventListener('input', calculate));
+// balance & payment use blur (formatted inputs) — already attached above
 ['rate', 'extraMonthly', 'lumpSum', 'lumpYears'].forEach(id => $(id).addEventListener('input', calculate));
 
 // Init
