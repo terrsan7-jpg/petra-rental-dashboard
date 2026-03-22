@@ -1153,9 +1153,9 @@ function renderScenarios(balance, rate, payment, lumpYears, originalPrincipal) {
   const isAr = currentLang === 'ar';
   const scenarios = [
     { name: isAr ? 'الحد الأدنى فقط' : 'Minimum Only', extra: 0, lump: 0, lumpYrs: 999 },
+    { name: isAr ? 'دفعة سنوية واحدة $44K' : '1x Lump $44K (yr 1 only)', extra: 0, lump: 44400, lumpYrs: 1 },
     { name: isAr ? '+$500/شهر مضاعفة' : '+$500/mo Double-Up', extra: 500, lump: 0, lumpYrs: 999 },
     { name: isAr ? '+$1,000/شهر مضاعفة' : '+$1,000/mo Double-Up', extra: 1000, lump: 0, lumpYrs: 999 },
-    { name: isAr ? '$500/شهر + $20K سنوي' : '$500/mo + $20K Lump', extra: 500, lump: 20000, lumpYrs: lumpYears },
     { name: isAr ? 'أقصى مضاعفة' : 'Max Double-Up', extra: 2733, lump: 0, lumpYrs: 999 },
     { name: isAr ? 'أقصى كل شيء' : 'Max Everything', extra: 2733, lump: 44400, lumpYrs: lumpYears }
   ];
@@ -1185,15 +1185,43 @@ function renderScenarios(balance, rate, payment, lumpYears, originalPrincipal) {
   results.forEach(r => {
     const isBest = r.totalInterest === minInterest && results.length > 1 && r.extra + r.lump > 0;
     const saved = results[0].totalInterest - r.totalInterest;
-    let details = [];
-    if (r.extra > 0) details.push(fmt(r.extra) + L.moExtra);
-    if (r.lump > 0) details.push(fmt(r.lump) + L.yrLump + (r.lumpYrs < 999 ? L.forYrs + r.lumpYrs + L.ySuffix : ''));
-    const totalExtraPerYear = (r.extra * 12) + r.lump;
-    const detailStr = details.length > 0 ? details.join(' + ') : L.noExtra;
+
+    // Build clear breakdown lines
+    let breakdownLines = [];
+    const isMin = r.extra === 0 && r.lump === 0;
+
+    if (isMin) {
+      breakdownLines.push('<div style="color:var(--muted);font-style:italic;">' + L.noExtra + '</div>');
+    } else {
+      if (r.extra > 0) {
+        const moTotal = r.extra * r.months;
+        breakdownLines.push('<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">'
+          + '<span>' + (isAr ? 'مضاعفة شهرية' : 'Monthly double-up') + '</span>'
+          + '<strong>' + fmt(r.extra) + '/' + (isAr ? 'شهر' : 'mo') + '</strong></div>');
+      }
+      if (r.lump > 0) {
+        const lumpTotal = r.lump * Math.min(r.lumpYrs < 999 ? r.lumpYrs : Math.ceil(r.months / 12), r.lumpYearsUsed || Math.ceil(r.months / 12));
+        const yrsLabel = r.lumpYrs < 999
+          ? (isAr ? ' × ' + r.lumpYrs + ' سنة' : ' × ' + r.lumpYrs + (r.lumpYrs === 1 ? ' yr' : ' yrs'))
+          : (isAr ? ' كل سنة' : ' every yr');
+        breakdownLines.push('<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">'
+          + '<span>' + (isAr ? 'دفعة سنوية' : 'Annual lump sum') + '</span>'
+          + '<strong>' + fmt(r.lump) + yrsLabel + '</strong></div>');
+      }
+
+      // Total extra cash you need
+      const totalExtraCash = r.totalExtra;
+      breakdownLines.push('<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0 0;margin-top:4px;border-top:1px dashed #e2e8f0;font-size:12px;">'
+        + '<span style="color:var(--accent);font-weight:600;">' + (isAr ? 'إجمالي نقد إضافي مطلوب' : 'Total extra cash needed') + '</span>'
+        + '<strong style="color:var(--accent);">' + fmt(totalExtraCash) + '</strong></div>');
+    }
+
     grid.innerHTML += `
       <div class="scenario-card ${isBest ? 'best' : ''}">
         <h3>${r.name}${isBest ? ' &#10003;' : ''}</h3>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;">${detailStr}${totalExtraPerYear > 0 ? '<br><strong style="color:var(--text);">' + fmt(totalExtraPerYear) + '/' + (isAr ? 'سنة' : 'yr') + '</strong> ' + L.totalExtra : ''}</div>
+        <div style="font-size:12px;margin-bottom:10px;padding:8px 10px;background:${isMin ? '#f9fafb' : 'linear-gradient(135deg, #eef2ff, #f5f3ff)'};border-radius:8px;border:1px solid ${isMin ? '#e2e8f0' : '#e0e7ff'};">
+          ${breakdownLines.join('')}
+        </div>
         <div class="metric"><span>${L.payoff}</span><span class="v">${monthsToStr(r.months)}</span></div>
         <div class="metric"><span>${L.totalInt}</span><span class="v">${fmt(r.totalInterest)}</span></div>
         <div class="metric"><span>${L.intSaved}</span><span class="v" style="color:${saved > 0 ? 'var(--green)' : 'var(--muted)'}">${saved > 0 ? fmt(saved) : '—'}</span></div>
